@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FF Optimizer</string>
+    <string name="notification_service_name">FF Optimizer Notification Monitor</string>
+</resources>

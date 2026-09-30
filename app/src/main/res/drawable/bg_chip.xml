@@ -1,0 +1,5 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/md_surface_container_high" />
+    <corners android:radius="50dp" />
+    <padding android:left="12dp" android:right="12dp" />
+</shape>
