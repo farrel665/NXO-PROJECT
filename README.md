@@ -1,54 +1,65 @@
 # NXO DEBLOAT
 
-Kotlin + Jetpack Compose Material 3 + Shizuku, normal Activity only.
+Android Kotlin + Jetpack Compose + Material 3 + Shizuku, non-root.
+
+## UI
+- Entire application UI is Jetpack Compose/Kotlin.
+- No XML layout files are used.
+- AndroidManifest.xml remains XML because Android requires a manifest.
+- Normal Activity only; no floating overlay.
 
 ## Features
-- Free Fire / Free Fire MAX detection
-- AOT-style ART speed compilation
-- speed-profile compilation
-- app cache cleanup
-- global Android cache trim
-- automatic maximum supported display refresh-rate request
-- display/FPS/SurfaceFlinger diagnostics
-- touch diagnostics
-- notification monitoring
-- daemon/device status
-- in-activity crosshair menu
-- no XML UI
-- no floating overlay
 
-## Important technical behavior
+### FF / FF MAX JIT/AOT
+Uses Android ART package compilation:
+- `speed-profile` profile-guided compilation
+- background dexopt
 
-### JIT / AOT
-Android ART manages JIT at runtime. A normal app cannot universally force a permanent
-"JIT ON" mode. The project therefore exposes Android package compilation modes rather
-than pretending to control JIT.
+Packages:
+- `com.dts.freefireth`
+- `com.dts.freefiremax`
 
-### Refresh rate / FPS
-Android exposes supported display modes to apps. NXO detects the maximum mode and
-requests it through Android settings. The system/OEM scheduler may still choose a
-different mode.
+No game-memory injection or asset patching is performed.
 
-### SurfaceFlinger
-The app reads SurfaceFlinger diagnostics. It does not write undocumented debug
-properties such as arbitrary `debug.sf.*` values because those are OEM/build
-dependent and can be ignored or destabilize devices.
+### Auto cache cleanup
+Uses `pm trim-caches 2G`. This trims package caches without `pm clear`, so game data/login data is not intentionally wiped.
 
-### VSYNC
-There is no universal supported non-root switch that disables VSYNC system-wide.
-NXO therefore reports VSYNC/SurfaceFlinger state instead of displaying a fake
-"VSYNC OFF" status.
+### Refresh rate / SurfaceFlinger
+- Detects supported display modes.
+- Can request the detected maximum refresh rate using standard `peak_refresh_rate` and `min_refresh_rate` settings when exposed by the device.
+- Auto max-refresh toggle is included.
+- SurfaceFlinger diagnostics are read through Shizuku.
 
-### Cache
-`pm clear --cache-only` is used for the selected game. It does not clear user data
-or log the user out. A global `pm trim-caches` action is also available in the
-backend for future UI expansion.
+OEMs may ignore standard settings. The app does not pretend a setting worked when Android/OEM does not expose it.
+
+### FPS / VSync
+- Reads real `gfxinfo` frame statistics.
+- Checks exposed SurfaceFlinger/VSync properties.
+- Requests Android Game Mode `performance` when the device supports the command.
+- There is intentionally no fake universal "unlock FPS" or "disable VSync" command. FPS caps and VSync are ultimately controlled by Android/OEM/game rendering paths.
+
+### Device + daemon monitoring
+- NotificationListenerService monitors notification events.
+- While the Activity is open and Shizuku is authorized, the app also checks the resumed package every ~2.5 seconds.
+- When FF/FF MAX is detected, the UI changes to a GAME SESSION / DEVICE + DAEMON MONITORING state.
+
+### Crosshair menu
+A Compose crosshair menu/preview is included. It is UI-only:
+- Classic
+- Dot
+- Plus
+- Circle
+
+It does not inject an overlay into Free Fire and does not automate aiming/input.
 
 ## Build
-The GitHub Actions workflow installs Gradle 9.1 and JDK 17, then builds:
-`./gradlew assembleDebug`
+AGP 8.10.0 requires Gradle 8.11.1 or newer; the included workflow installs Gradle 8.13 and JDK 17. See Android's AGP compatibility documentation.
 
-No XML layout files are used.
+GitHub Actions workflow:
+`.github/workflows/build.yml`
 
-## Shizuku
-Install/start Shizuku separately and grant NXO DEBLOAT permission.
+Build command:
+`./gradlew assembleDebug --stacktrace`
+
+Artifact:
+`app/build/outputs/apk/debug/app-debug.apk`

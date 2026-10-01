@@ -3,41 +3,57 @@ name: Build NXO DEBLOAT
 on:
   workflow_dispatch:
   push:
-    branches: [main, master]
+    branches: [ main, master ]
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
-      - name: Setup Gradle 9.1
+      - name: Setup Gradle 8.13
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "9.1"
+          gradle-version: '8.13'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Accept licenses
+      - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses || true
 
-      - name: Install Android SDK
+      - name: Install Android SDK 36
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Build
+      - name: Verify toolchain
+        run: |
+          java -version
+          gradle --version
+
+      - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Upload APK
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: NXO-DEBLOAT-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 7
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NXO-DEBLOAT-release-unsigned
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 14

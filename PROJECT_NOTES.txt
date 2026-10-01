@@ -1,8 +1,20 @@
 NXO DEBLOAT 2.0.0
-Kotlin + Jetpack Compose Material 3
-No XML UI
-No floating overlay
-Shizuku API 13.1.5
-AGP 9.0.1 / Gradle 9.1 / JDK 17 / compileSdk 36
-Free Fire: com.dts.freefireth
-Free Fire MAX: com.dts.freefiremax
+
+UI: Kotlin + Jetpack Compose + Material 3
+UI XML: none (AndroidManifest.xml is still required by Android)
+Backend: Shizuku non-root
+Targets: Free Fire / Free Fire MAX
+
+Implemented:
+- JIT/AOT-style ART package compilation (speed-profile)
+- background dexopt
+- safe package-cache trim
+- display supported-Hz detection
+- auto max refresh request using standard Android settings
+- SurfaceFlinger diagnostics
+- gfxinfo FPS/frame diagnostics
+- performance Game Mode request where supported
+- VSync capability diagnostics, no fake disable state
+- notification monitor
+- FF/FF MAX session monitor while Activity is active
+- Compose crosshair preview/menu

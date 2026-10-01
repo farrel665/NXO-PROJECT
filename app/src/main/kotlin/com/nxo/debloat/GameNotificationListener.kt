@@ -5,22 +5,16 @@ import android.service.notification.StatusBarNotification
 
 class GameNotificationListener : NotificationListenerService() {
     companion object {
-        var listener: ((String) -> Unit)? = null
+        @Volatile var listener: ((String) -> Unit)? = null
     }
-
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        val title = try {
-            sbn.notification.extras.getCharSequence("android.title")?.toString().orEmpty()
-        } catch (_: Exception) { "" }
-
+        val title = sbn.notification.extras?.getCharSequence("android.title")?.toString().orEmpty()
         val text = "${sbn.packageName}${if (title.isNotBlank()) " • $title" else ""}"
-        MonitorState.setLast(this, text)
+        NotificationState.setLast(this, text)
         listener?.invoke(text)
     }
-
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
         val text = "Removed: ${sbn.packageName}"
-        MonitorState.setLast(this, text)
-        listener?.invoke(text)
+        NotificationState.setLast(this, text); listener?.invoke(text)
     }
 }
