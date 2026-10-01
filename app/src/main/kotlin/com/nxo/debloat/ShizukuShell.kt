@@ -35,7 +35,7 @@ object ShizukuShell {
         } finally { try { process?.destroy() } catch (_: Exception) {} }
     }
 
-    private fun read(input: java.io.InputStream, target: String) {
+    private fun read(input: java.io.InputStream, target: StringBuilder) {
         try { BufferedReader(InputStreamReader(input)).useLines { lines -> lines.forEach { target.append(it).append('\n') } } }
         catch (_: Exception) {}
     }
