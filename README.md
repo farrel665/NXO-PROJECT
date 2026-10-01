@@ -1,60 +1,54 @@
-# FF Optimizer
+# NXO DEBLOAT
 
-Android Java + XML application using Material 3 styled views and Shizuku.
-No floating overlay is used.
+Kotlin + Jetpack Compose Material 3 + Shizuku, normal Activity only.
 
-## What it does
+## Features
+- Free Fire / Free Fire MAX detection
+- AOT-style ART speed compilation
+- speed-profile compilation
+- app cache cleanup
+- global Android cache trim
+- automatic maximum supported display refresh-rate request
+- display/FPS/SurfaceFlinger diagnostics
+- touch diagnostics
+- notification monitoring
+- daemon/device status
+- in-activity crosshair menu
+- no XML UI
+- no floating overlay
 
-### Shizuku
-- Detects whether Shizuku is running.
-- Requests Shizuku permission.
-- Runs selected Android shell commands through Shizuku.
+## Important technical behavior
 
-Shizuku is an external dependency. The user must install/start Shizuku separately.
+### JIT / AOT
+Android ART manages JIT at runtime. A normal app cannot universally force a permanent
+"JIT ON" mode. The project therefore exposes Android package compilation modes rather
+than pretending to control JIT.
 
-### Free Fire / Free Fire MAX compile
-Targets:
-- `com.dts.freefireth`
-- `com.dts.freefiremax`
+### Refresh rate / FPS
+Android exposes supported display modes to apps. NXO detects the maximum mode and
+requests it through Android settings. The system/OEM scheduler may still choose a
+different mode.
 
-The Compile buttons call Android's package compiler:
+### SurfaceFlinger
+The app reads SurfaceFlinger diagnostics. It does not write undocumented debug
+properties such as arbitrary `debug.sf.*` values because those are OEM/build
+dependent and can be ignored or destabilize devices.
 
-`cmd package compile -m speed-profile -f <package>`
+### VSYNC
+There is no universal supported non-root switch that disables VSYNC system-wide.
+NXO therefore reports VSYNC/SurfaceFlinger state instead of displaying a fake
+"VSYNC OFF" status.
 
-This uses Android's real package compilation mechanism. It does not patch game files, inject code, change game memory, or bypass game protections.
-
-### Touch diagnostics
-The app reads Android input diagnostics through `dumpsys input` when Shizuku allows it.
-
-Important:
-- Android does not provide a universal shell command that can force a touchscreen's physical sampling rate.
-- `pointer_speed` is not a touchscreen polling-rate control.
-- The app therefore does not fake a "120/240 Hz touch speed" number.
-- If the OEM/kernel exposes a real touch control, it can be added as a device-specific backend later.
-
-### Notification monitoring
-Uses Android `NotificationListenerService`.
-The user must manually grant Notification Access in Android Settings.
+### Cache
+`pm clear --cache-only` is used for the selected game. It does not clear user data
+or log the user out. A global `pm trim-caches` action is also available in the
+backend for future UI expansion.
 
 ## Build
-
-Open in Android Studio or run:
-
+The GitHub Actions workflow installs Gradle 9.1 and JDK 17, then builds:
 `./gradlew assembleDebug`
 
-APK:
+No XML layout files are used.
 
-`app/build/outputs/apk/debug/app-debug.apk`
-
-GitHub Actions is included in `.github/workflows/build.yml`.
-
-## Requirements
-
-- Android 8.0+ (API 26)
-- Shizuku installed and running
-- Non-root operation is supported when Shizuku is started through wireless debugging/ADB.
-- For Android 11+, Shizuku can generally be started on-device using Wireless Debugging.
-
-## Notes
-
-This project intentionally avoids fake "touch booster" values. Actual touch behavior is controlled by the Android input stack, OEM configuration and touchscreen controller/kernel. Shizuku can provide elevated shell access, but it cannot create a hardware capability that the device does not expose.
+## Shizuku
+Install/start Shizuku separately and grant NXO DEBLOAT permission.

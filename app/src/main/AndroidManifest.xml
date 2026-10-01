@@ -5,26 +5,26 @@
 
     <application
         android:allowBackup="false"
-        android:label="@string/app_name"
-        android:theme="@style/Theme.FFOptimizer"
-        android:supportsRtl="true">
+        android:label="NXO DEBLOAT"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.NXODebloat">
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
         <service
             android:name=".GameNotificationListener"
-            android:label="@string/notification_service_name"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-            android:exported="true">
+            android:exported="true"
+            android:label="NXO Device Monitor"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
+                <action android:name="android.service.notification.NotificationListenerService"/>
             </intent-filter>
         </service>
 

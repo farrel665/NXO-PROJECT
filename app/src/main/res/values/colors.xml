@@ -1,9 +1,0 @@
-<resources>
-    <color name="md_primary">#9CCBFF</color>
-    <color name="md_on_primary">#003354</color>
-    <color name="md_secondary">#B8C8DA</color>
-    <color name="md_surface">#101418</color>
-    <color name="md_surface_container">#1B2026</color>
-    <color name="md_surface_container_high">#252B32</color>
-    <color name="md_outline">#8C9299</color>
-</resources>

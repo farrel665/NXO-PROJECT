@@ -1,7 +1,8 @@
-FF Optimizer 1.0.1
-Java + XML + Material 3 styled UI
-Shizuku API 12.2.0
-No floating overlay / normal Activity only
-Free Fire packages: com.dts.freefireth / com.dts.freefiremax
-Compile command: cmd package compile -m speed-profile -f <package>
-GitHub Actions: Gradle 8.13 + JDK 17 + Android SDK 36
+NXO DEBLOAT 2.0.0
+Kotlin + Jetpack Compose Material 3
+No XML UI
+No floating overlay
+Shizuku API 13.1.5
+AGP 9.0.1 / Gradle 9.1 / JDK 17 / compileSdk 36
+Free Fire: com.dts.freefireth
+Free Fire MAX: com.dts.freefiremax
