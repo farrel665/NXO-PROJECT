@@ -5,12 +5,15 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,7 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
@@ -36,11 +41,14 @@ class MainActivity : ComponentActivity() {
     private val permissionListener = Shizuku.OnRequestPermissionResultListener { requestCode, _ ->
         if (requestCode == permissionRequest) runOnUiThread { }
     }
-    private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+    private val notificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         Shizuku.addRequestPermissionResultListener(permissionListener)
@@ -57,6 +65,55 @@ class MainActivity : ComponentActivity() {
         if (!Shizuku.pingBinder()) return
         if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) return
         Shizuku.requestPermission(permissionRequest)
+    }
+
+    private fun toast(msg: String) =
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+
+    // Button dengan efek scale saat ditekan
+    @Composable
+    private fun PressBtn(
+        onClick: () -> Unit,
+        enabled: Boolean = true,
+        modifier: Modifier = Modifier,
+        content: @Composable RowScope.() -> Unit
+    ) {
+        val src = remember { MutableInteractionSource() }
+        val pressed by src.collectIsPressedAsState()
+        val scale by animateFloatAsState(
+            targetValue = if (pressed) 0.95f else 1f,
+            label = "btn_scale"
+        )
+        Button(
+            onClick = onClick,
+            enabled = enabled,
+            modifier = modifier.graphicsLayer { scaleX = scale; scaleY = scale },
+            interactionSource = src,
+            content = content
+        )
+    }
+
+    // OutlinedButton dengan efek scale saat ditekan
+    @Composable
+    private fun PressOutBtn(
+        onClick: () -> Unit,
+        enabled: Boolean = true,
+        modifier: Modifier = Modifier,
+        content: @Composable RowScope.() -> Unit
+    ) {
+        val src = remember { MutableInteractionSource() }
+        val pressed by src.collectIsPressedAsState()
+        val scale by animateFloatAsState(
+            targetValue = if (pressed) 0.95f else 1f,
+            label = "outbtn_scale"
+        )
+        OutlinedButton(
+            onClick = onClick,
+            enabled = enabled,
+            modifier = modifier.graphicsLayer { scaleX = scale; scaleY = scale },
+            interactionSource = src,
+            content = content
+        )
     }
 
     @Composable
@@ -76,6 +133,54 @@ class MainActivity : ComponentActivity() {
         var crosshair by remember { mutableStateOf("Classic") }
         var crosshairColor by remember { mutableStateOf(Color.White) }
         var monitoring by remember { mutableStateOf(true) }
+
+        // State untuk dialog clean cache
+        var showCleanDialog by remember { mutableStateOf(false) }
+        var cleanRunning by remember { mutableStateOf(false) }
+        var cleanResult by remember { mutableStateOf("") }
+
+        // Dialog proses clean cache
+        if (showCleanDialog) {
+            AlertDialog(
+                onDismissRequest = { if (!cleanRunning) showCleanDialog = false },
+                shape = RoundedCornerShape(20.dp),
+                title = {
+                    Text("Auto Cache Cleanup", fontWeight = FontWeight.Bold)
+                },
+                text = {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    ) {
+                        if (cleanRunning) {
+                            CircularProgressIndicator()
+                            Spacer(Modifier.height(16.dp))
+                            Text(
+                                "Sedang membersihkan cache semua package...\nMohon tunggu sebentar.",
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 14.sp
+                            )
+                        } else {
+                            Text(
+                                cleanResult,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    if (!cleanRunning) {
+                        Button(onClick = { showCleanDialog = false }) {
+                            Text("OK")
+                        }
+                    }
+                }
+            )
+        }
 
         LaunchedEffect(Unit) {
             while (true) {
@@ -121,29 +226,54 @@ class MainActivity : ComponentActivity() {
                     contentPadding = PaddingValues(18.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+
+                    // ── Header ──────────────────────────────────────────────
                     item {
                         Text("NXO DEBLOAT", fontSize = 31.sp, fontWeight = FontWeight.Bold)
-                        Text("Shizuku • non-root • real device controls", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Shizuku • non-root • real device controls",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
+
+                    // ── Shizuku ─────────────────────────────────────────────
                     item {
                         NxoCard {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
                                     Text("Shizuku", fontWeight = FontWeight.Bold, fontSize = 19.sp)
-                                    Text(if (shizuku) "Connected and authorized" else if (Shizuku.pingBinder()) "Running — permission required" else "Service not running", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(
+                                        when {
+                                            shizuku -> "Connected and authorized"
+                                            Shizuku.pingBinder() -> "Running — permission required"
+                                            else -> "Service not running"
+                                        },
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
                                 StatusPill(if (shizuku) "READY" else "OFF")
                             }
                             Spacer(Modifier.height(12.dp))
-                            Button(onClick = { requestShizuku() }, modifier = Modifier.fillMaxWidth()) {
+                            PressBtn(
+                                onClick = {
+                                    requestShizuku()
+                                    toast(if (shizuku) "Shizuku sudah terhubung" else "Meminta izin Shizuku...")
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
                                 Text(if (shizuku) "Shizuku connected" else "Request Shizuku permission")
                             }
                         }
                     }
+
+                    // ── JIT / AOT ────────────────────────────────────────────
                     item {
                         NxoCard {
                             Text("FF / FF MAX • JIT / AOT", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Text("Android ART package compilation. No game-memory injection.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                "Android ART package compilation. No game-memory injection.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                             Spacer(Modifier.height(10.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 AssistChip(onClick = {}, label = { Text("FF ${if (ffInstalled) "✓" else "—"}") })
@@ -151,26 +281,76 @@ class MainActivity : ComponentActivity() {
                             }
                             Spacer(Modifier.height(10.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Button(onClick = { compile(DeviceOptimizer.FF, "FF", false) { log = it } }, enabled = shizuku && ffInstalled, modifier = Modifier.weight(1f)) { Text("JIT/AOT FF") }
-                                Button(onClick = { compile(DeviceOptimizer.FF_MAX, "FF MAX", false) { log = it } }, enabled = shizuku && maxInstalled, modifier = Modifier.weight(1f)) { Text("JIT/AOT MAX") }
+                                PressBtn(
+                                    onClick = {
+                                        toast("Memulai kompilasi JIT/AOT Free Fire...")
+                                        compile(DeviceOptimizer.FF, "FF", false) { log = it }
+                                    },
+                                    enabled = shizuku && ffInstalled,
+                                    modifier = Modifier.weight(1f)
+                                ) { Text("JIT/AOT FF") }
+                                PressBtn(
+                                    onClick = {
+                                        toast("Memulai kompilasi JIT/AOT FF MAX...")
+                                        compile(DeviceOptimizer.FF_MAX, "FF MAX", false) { log = it }
+                                    },
+                                    enabled = shizuku && maxInstalled,
+                                    modifier = Modifier.weight(1f)
+                                ) { Text("JIT/AOT MAX") }
                             }
-                            OutlinedButton(onClick = { compileBgDexopt { log = it } }, enabled = shizuku, modifier = Modifier.fillMaxWidth()) { Text("Run background dexopt") }
+                            PressOutBtn(
+                                onClick = {
+                                    toast("Menjalankan background dexopt...")
+                                    compileBgDexopt { log = it }
+                                },
+                                enabled = shizuku,
+                                modifier = Modifier.fillMaxWidth()
+                            ) { Text("Run background dexopt") }
                         }
                     }
+
+                    // ── Clean Cache ──────────────────────────────────────────
                     item {
                         NxoCard {
                             Text("Auto cache cleanup", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Text("Trims package caches; it does not wipe game data or login files.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                "Trims package caches; it does not wipe game data or login files.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                             Spacer(Modifier.height(10.dp))
-                            Button(onClick = { cleanCache { log = it } }, enabled = shizuku, modifier = Modifier.fillMaxWidth()) { Text("Clean cache now") }
+                            PressBtn(
+                                onClick = {
+                                    showCleanDialog = true
+                                    cleanRunning = true
+                                    cleanResult = ""
+                                    cleanCache { result ->
+                                        cleanRunning = false
+                                        cleanResult = result
+                                        log = result
+                                    }
+                                },
+                                enabled = shizuku,
+                                modifier = Modifier.fillMaxWidth()
+                            ) { Text("Clean cache now") }
                         }
                     }
+
+                    // ── Refresh / SurfaceFlinger ─────────────────────────────
                     item {
                         NxoCard {
                             Text("Refresh / SurfaceFlinger", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Text("Detected: ${fmt(maxHz)} Hz • supported: ${supportedHz.joinToString { fmt(it) }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                "Detected: ${fmt(maxHz)} Hz • supported: ${supportedHz.joinToString { fmt(it) }}",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Switch(checked = autoMaxRefresh, onCheckedChange = { autoMaxRefresh = it })
+                                Switch(
+                                    checked = autoMaxRefresh,
+                                    onCheckedChange = {
+                                        autoMaxRefresh = it
+                                        toast(if (it) "Auto max refresh rate aktif" else "Auto max refresh rate nonaktif")
+                                    }
+                                )
                                 Text("Auto max refresh rate")
                             }
                             if (autoMaxRefresh && shizuku) {
@@ -179,92 +359,211 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             Spacer(Modifier.height(4.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 var expanded by remember { mutableStateOf(false) }
                                 Box(Modifier.weight(1f)) {
-                                    OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) { Text("Max ${fmt(selectedHz)} Hz") }
-                                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                                        supportedHz.forEach { hz -> DropdownMenuItem(text = { Text(fmt(hz) + " Hz") }, onClick = { selectedHz = hz; expanded = false }) }
+                                    PressOutBtn(
+                                        onClick = { expanded = true },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) { Text("Max ${fmt(selectedHz)} Hz") }
+                                    DropdownMenu(
+                                        expanded = expanded,
+                                        onDismissRequest = { expanded = false }
+                                    ) {
+                                        supportedHz.forEach { hz ->
+                                            DropdownMenuItem(
+                                                text = { Text(fmt(hz) + " Hz") },
+                                                onClick = { selectedHz = hz; expanded = false }
+                                            )
+                                        }
                                     }
                                 }
-                                Button(onClick = {
-                                    scope.launch(Dispatchers.IO) {
-                                        val r = DeviceOptimizer.setRefreshRate(selectedHz)
-                                        withContext(Dispatchers.Main) { log = if (r.ok) "Refresh-rate request applied: ${fmt(selectedHz)} Hz. OEM may ignore it." else r.text }
-                                    }
-                                }, enabled = shizuku) { Text("Apply") }
+                                PressBtn(
+                                    onClick = {
+                                        toast("Menerapkan refresh rate ${fmt(selectedHz)} Hz...")
+                                        scope.launch(Dispatchers.IO) {
+                                            val r = DeviceOptimizer.setRefreshRate(selectedHz)
+                                            withContext(Dispatchers.Main) {
+                                                log = if (r.ok) "Refresh-rate request applied: ${fmt(selectedHz)} Hz. OEM may ignore it." else r.text
+                                                toast(if (r.ok) "Refresh rate ${fmt(selectedHz)} Hz diterapkan!" else "Gagal menerapkan refresh rate")
+                                            }
+                                        }
+                                    },
+                                    enabled = shizuku
+                                ) { Text("Apply") }
                             }
                             Spacer(Modifier.height(8.dp))
-                            OutlinedButton(onClick = {
-                                scope.launch(Dispatchers.IO) {
-                                    val r = DeviceOptimizer.surfaceDiagnostics()
-                                    withContext(Dispatchers.Main) { surface = r.text.ifBlank { "No SurfaceFlinger data returned." } }
-                                }
-                            }, enabled = shizuku, modifier = Modifier.fillMaxWidth()) { Text("SurfaceFlinger diagnostics") }
-                            Text(surface.take(1200), modifier = Modifier.padding(top = 8.dp), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            PressOutBtn(
+                                onClick = {
+                                    toast("Mengambil data SurfaceFlinger...")
+                                    scope.launch(Dispatchers.IO) {
+                                        val r = DeviceOptimizer.surfaceDiagnostics()
+                                        withContext(Dispatchers.Main) {
+                                            surface = r.text.ifBlank { "No SurfaceFlinger data returned." }
+                                            toast("Data SurfaceFlinger diperoleh")
+                                        }
+                                    }
+                                },
+                                enabled = shizuku,
+                                modifier = Modifier.fillMaxWidth()
+                            ) { Text("SurfaceFlinger diagnostics") }
+                            Text(
+                                surface.take(1200),
+                                modifier = Modifier.padding(top = 8.dp),
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
+
+                    // ── FPS / VSync ──────────────────────────────────────────
                     item {
                         NxoCard {
                             Text("FPS / VSync", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Text("Max FPS target is shown from the display capability. The game engine may enforce its own cap.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                "Max FPS target is shown from the display capability. The game engine may enforce its own cap.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                             Spacer(Modifier.height(8.dp))
                             Text("Display ceiling: ${fmt(maxHz)} FPS-class")
-                            Text("VSync: capability check only — no fake 'disabled' state.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 10.dp)) {
-                                OutlinedButton(onClick = {
-                                    scope.launch(Dispatchers.IO) {
-                                        val r = DeviceOptimizer.vsyncCapability()
-                                        withContext(Dispatchers.Main) { log = r.text.ifBlank { "No VSync/SurfaceFlinger property exposed." } }
-                                    }
-                                }, enabled = shizuku, modifier = Modifier.weight(1f)) { Text("Check VSync") }
-                                OutlinedButton(onClick = {
+                            Text(
+                                "VSync: capability check only — no fake 'disabled' state.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(top = 10.dp)
+                            ) {
+                                PressOutBtn(
+                                    onClick = {
+                                        toast("Memeriksa kemampuan VSync...")
+                                        scope.launch(Dispatchers.IO) {
+                                            val r = DeviceOptimizer.vsyncCapability()
+                                            withContext(Dispatchers.Main) {
+                                                log = r.text.ifBlank { "No VSync/SurfaceFlinger property exposed." }
+                                                toast("Pemeriksaan VSync selesai")
+                                            }
+                                        }
+                                    },
+                                    enabled = shizuku,
+                                    modifier = Modifier.weight(1f)
+                                ) { Text("Check VSync") }
+                                PressOutBtn(
+                                    onClick = {
+                                        toast("Mengambil statistik FPS...")
+                                        scope.launch(Dispatchers.IO) {
+                                            val pkg = if (maxInstalled) DeviceOptimizer.FF_MAX else DeviceOptimizer.FF
+                                            val r = DeviceOptimizer.gfxDiagnostics(pkg)
+                                            withContext(Dispatchers.Main) {
+                                                log = r.text.ifBlank { "No gfxinfo data." }
+                                                toast("Data FPS diperoleh")
+                                            }
+                                        }
+                                    },
+                                    enabled = shizuku && (ffInstalled || maxInstalled),
+                                    modifier = Modifier.weight(1f)
+                                ) { Text("FPS stats") }
+                            }
+                            PressOutBtn(
+                                onClick = {
+                                    toast("Meminta mode game performa tinggi...")
                                     scope.launch(Dispatchers.IO) {
                                         val pkg = if (maxInstalled) DeviceOptimizer.FF_MAX else DeviceOptimizer.FF
-                                        val r = DeviceOptimizer.gfxDiagnostics(pkg)
-                                        withContext(Dispatchers.Main) { log = r.text.ifBlank { "No gfxinfo data." } }
+                                        val r = if (ffInstalled || maxInstalled)
+                                            DeviceOptimizer.requestPerformanceMode(pkg)
+                                        else
+                                            ShizukuShell.Result(-1, stderr = "FF/FF MAX not installed")
+                                        withContext(Dispatchers.Main) {
+                                            log = if (r.ok) "Performance game mode requested for $pkg." else r.text
+                                            toast(if (r.ok) "Mode performa tinggi aktif!" else "Gagal mengaktifkan mode performa")
+                                        }
                                     }
-                                }, enabled = shizuku && (ffInstalled || maxInstalled), modifier = Modifier.weight(1f)) { Text("FPS stats") }
-                            }
-                            OutlinedButton(onClick = {
-                                scope.launch(Dispatchers.IO) {
-                                    val pkg = if (maxInstalled) DeviceOptimizer.FF_MAX else DeviceOptimizer.FF
-                                    val r = if (ffInstalled || maxInstalled) DeviceOptimizer.requestPerformanceMode(pkg) else ShizukuShell.Result(-1, stderr = "FF/FF MAX not installed")
-                                    withContext(Dispatchers.Main) { log = if (r.ok) "Performance game mode requested for $pkg." else r.text }
-                                }
-                            }, enabled = shizuku && (ffInstalled || maxInstalled), modifier = Modifier.fillMaxWidth()) { Text("Request max-performance game mode") }
+                                },
+                                enabled = shizuku && (ffInstalled || maxInstalled),
+                                modifier = Modifier.fillMaxWidth()
+                            ) { Text("Request max-performance game mode") }
                         }
                     }
+
+                    // ── Device + Daemon Monitor ──────────────────────────────
                     item {
                         NxoCard {
                             Text("Device + daemon monitor", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             Text(daemon, fontWeight = FontWeight.SemiBold)
-                            Text("Last notification: $lastEvent", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
-                                Switch(checked = monitoring, onCheckedChange = { monitoring = it })
+                            Text(
+                                "Last notification: $lastEvent",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(top = 8.dp)
+                            ) {
+                                Switch(
+                                    checked = monitoring,
+                                    onCheckedChange = {
+                                        monitoring = it
+                                        toast(if (it) "Monitoring aktif" else "Monitoring nonaktif")
+                                    }
+                                )
                                 Text("Monitor FF / FF MAX session")
                             }
-                            OutlinedButton(onClick = { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }, modifier = Modifier.fillMaxWidth()) { Text("Open Notification Access") }
+                            PressOutBtn(
+                                onClick = {
+                                    toast("Membuka pengaturan akses notifikasi...")
+                                    startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) { Text("Open Notification Access") }
                         }
                     }
+
+                    // ── Crosshair ────────────────────────────────────────────
                     item {
                         NxoCard {
                             Text("Crosshair menu", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Text("Preview/customization only. No game overlay or input injection.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                "Preview/customization only. No game overlay or input injection.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                             Spacer(Modifier.height(8.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf("Classic", "Dot", "Plus", "Circle").forEach { style -> FilterChip(selected = crosshair == style, onClick = { crosshair = style }, label = { Text(style) }) }
+                                listOf("Classic", "Dot", "Plus", "Circle").forEach { style ->
+                                    FilterChip(
+                                        selected = crosshair == style,
+                                        onClick = {
+                                            crosshair = style
+                                            toast("Crosshair: $style")
+                                        },
+                                        label = { Text(style) }
+                                    )
+                                }
                             }
                             Spacer(Modifier.height(12.dp))
-                            Box(Modifier.fillMaxWidth().height(120.dp).background(Color(0xFF080A0C), RoundedCornerShape(18.dp)), contentAlignment = Alignment.Center) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(120.dp)
+                                    .background(Color(0xFF080A0C), RoundedCornerShape(18.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 CrosshairPreview(crosshair, crosshairColor)
                             }
                         }
                     }
+
+                    // ── Activity Log ─────────────────────────────────────────
                     item {
                         NxoCard {
                             Text("Activity log", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                            Text(log.take(3000), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                log.take(3000),
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -285,30 +584,62 @@ class MainActivity : ComponentActivity() {
     private fun compile(pkg: String, label: String, speed: Boolean, done: (String) -> Unit) {
         Thread {
             val r = if (speed) DeviceOptimizer.compileSpeed(pkg) else DeviceOptimizer.compileProfile(pkg)
-            runOnUiThread { done(if (r.ok) "$label speed-profile AOT compilation completed.\n${r.text}" else "$label compile failed.\n${r.text}") }
+            runOnUiThread {
+                done(if (r.ok) "$label speed-profile AOT compilation completed.\n${r.text}" else "$label compile failed.\n${r.text}")
+                toast(if (r.ok) "$label kompilasi selesai!" else "$label kompilasi gagal")
+            }
         }.start()
     }
+
     private fun compileBgDexopt(done: (String) -> Unit) = Thread {
-        val r = DeviceOptimizer.runBgDexopt(); runOnUiThread { done(if (r.ok) "Background dexopt completed.\n${r.text}" else r.text) }
-    }.start()
-    private fun cleanCache(done: (String) -> Unit) = Thread {
-        val r = DeviceOptimizer.cleanCache(); runOnUiThread { done(if (r.ok) "Cache trim completed.\n${r.text}" else r.text) }
+        val r = DeviceOptimizer.runBgDexopt()
+        runOnUiThread {
+            done(if (r.ok) "Background dexopt completed.\n${r.text}" else r.text)
+            toast(if (r.ok) "Background dexopt selesai!" else "Background dexopt gagal")
+        }
     }.start()
 
-    @Composable private fun NxoCard(content: @Composable ColumnScope.() -> Unit) {
-        Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), modifier = Modifier.fillMaxWidth()) {
+    private fun cleanCache(done: (String) -> Unit) = Thread {
+        val r = DeviceOptimizer.cleanCache()
+        runOnUiThread {
+            done(if (r.ok) "Cache trim completed.\n${r.text}" else r.text)
+            toast(if (r.ok) "Cache berhasil dibersihkan!" else "Gagal membersihkan cache")
+        }
+    }.start()
+
+    @Composable
+    private fun NxoCard(content: @Composable ColumnScope.() -> Unit) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(Modifier.padding(17.dp), content = content)
         }
     }
-    @Composable private fun StatusPill(text: String) { AssistChip(onClick = {}, label = { Text(text) }) }
-    @Composable private fun CrosshairPreview(style: String, color: Color) {
+
+    @Composable
+    private fun StatusPill(text: String) {
+        AssistChip(onClick = {}, label = { Text(text) })
+    }
+
+    @Composable
+    private fun CrosshairPreview(style: String, color: Color) {
         Canvas(Modifier.size(70.dp)) {
             val c = Offset(size.width / 2, size.height / 2)
             when (style) {
                 "Dot" -> drawCircle(color, radius = 5f, center = c)
-                "Plus" -> { drawLine(color, Offset(c.x - 25, c.y), Offset(c.x + 25, c.y), strokeWidth = 4f); drawLine(color, Offset(c.x, c.y - 25), Offset(c.x, c.y + 25), strokeWidth = 4f) }
+                "Plus" -> {
+                    drawLine(color, Offset(c.x - 25, c.y), Offset(c.x + 25, c.y), strokeWidth = 4f)
+                    drawLine(color, Offset(c.x, c.y - 25), Offset(c.x, c.y + 25), strokeWidth = 4f)
+                }
                 "Circle" -> drawCircle(color, radius = 22f, center = c, style = Stroke(3f))
-                else -> { drawLine(color, Offset(c.x - 24, c.y), Offset(c.x - 6, c.y), strokeWidth = 3f); drawLine(color, Offset(c.x + 6, c.y), Offset(c.x + 24, c.y), strokeWidth = 3f); drawLine(color, Offset(c.x, c.y - 24), Offset(c.x, c.y - 6), strokeWidth = 3f); drawLine(color, Offset(c.x, c.y + 6), Offset(c.x, c.y + 24), strokeWidth = 3f) }
+                else -> {
+                    drawLine(color, Offset(c.x - 24, c.y), Offset(c.x - 6, c.y), strokeWidth = 3f)
+                    drawLine(color, Offset(c.x + 6, c.y), Offset(c.x + 24, c.y), strokeWidth = 3f)
+                    drawLine(color, Offset(c.x, c.y - 24), Offset(c.x, c.y - 6), strokeWidth = 3f)
+                    drawLine(color, Offset(c.x, c.y + 6), Offset(c.x, c.y + 24), strokeWidth = 3f)
+                }
             }
         }
     }
