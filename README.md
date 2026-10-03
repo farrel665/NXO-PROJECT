@@ -1,21 +1,22 @@
-# ImGui Overlay Menu (Android)
+# ImGui Overlay Menu - Android
 
-Template Android project with:
-- Dear ImGui fetched automatically during Gradle build
-- C++17 + JNI
-- Android overlay permission + floating service
-- Draggable bubble; hidden state shrinks the WindowManager view so it does not leave a large invisible touch blocker
-- Generic tabs, toggles, slider, demo window
-- CMake/NDK and GitHub Actions APK build
+Standalone Android overlay template using Kotlin + C++17 + Dear ImGui + OpenGL ES 3 + JNI.
 
-## Build
-1. Open the project in Android Studio or push it to GitHub.
-2. Use JDK 17, Android SDK 35, NDK 27.2.12479018, CMake 3.31.6.
-3. Run `./gradlew assembleDebug`.
-4. The first build downloads Dear ImGui v1.92.2b automatically.
+## Build locally
 
-## Important renderer note
-The included service/view skeleton deliberately separates overlay/window behavior from native ImGui state. For a production GPU overlay, replace `ImGuiOverlayView` with a `GLSurfaceView`/`SurfaceView`-backed WindowManager view and call `ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData())` after `ImGui::Render()`. This avoids pretending that Android Canvas can render ImGui's OpenGL draw lists.
+Open the folder in Android Studio with Android SDK 35, NDK 27.2.12479018 and CMake 3.22.1 installed. The CMake script downloads Dear ImGui 1.92.2b during configuration.
 
 ## GitHub Actions
-Push the extracted project to a GitHub repository. The workflow installs Gradle 8.13, Android SDK/NDK/CMake, fetches Dear ImGui automatically, builds the debug APK, and publishes the APK as an artifact.
+
+Push the project to GitHub and run **Actions → Build APK → Run workflow**. The workflow installs the required SDK/NDK/CMake packages and builds `app-debug.apk`.
+
+## Runtime
+
+1. Install APK.
+2. Open the app.
+3. Grant **Display over other apps**.
+4. Tap **Start floating menu**.
+5. Tap/drag the `IM` bubble.
+6. Hide returns the overlay to the 64x64 bubble, so the hidden panel does not leave a large transparent touch-blocking window.
+
+The menu is intentionally generic. It is a UI foundation; application-specific actions should be implemented behind the controls you choose.
