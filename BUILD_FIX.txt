@@ -1,4 +1,0 @@
-Build fix:
-The previous package had a placeholder gradlew and the workflow could call it before Gradle was installed.
-This version installs Gradle 8.13 first, then ./gradlew delegates to the installed Gradle executable.
-Use the .github/workflows/build.yml included in this ZIP; do not keep the old workflow.
