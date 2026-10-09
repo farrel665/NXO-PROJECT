@@ -1,62 +1,34 @@
-import java.net.URI
-import java.util.zip.ZipInputStream
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
 
-val imguiVersion = "v1.92.2b"
-val imguiDir = layout.projectDirectory.dir("src/main/cpp/third_party/imgui").asFile
-val prepareImgui by tasks.registering {
-    outputs.dir(imguiDir)
-    doLast {
-        if (File(imguiDir, "imgui.cpp").exists() && File(imguiDir, "backends/imgui_impl_android.cpp").exists()) return@doLast
-        val tmp = layout.buildDirectory.file("imgui-$imguiVersion.zip").get().asFile
-        tmp.parentFile.mkdirs()
-        URI("https://github.com/ocornut/imgui/archive/refs/tags/$imguiVersion.zip").toURL().openStream().use { input -> tmp.outputStream().use { input.copyTo(it) } }
-        imguiDir.deleteRecursively(); imguiDir.mkdirs()
-        ZipInputStream(tmp.inputStream().buffered()).use { zis ->
-            var e = zis.nextEntry
-            while (e != null) {
-                val prefix = "imgui-$imguiVersion/"
-                if (e.name.startsWith(prefix)) {
-                    val rel = e.name.removePrefix(prefix)
-                    if (rel.isNotEmpty()) {
-                        val out = File(imguiDir, rel)
-                        if (e.isDirectory) out.mkdirs() else { out.parentFile.mkdirs(); out.outputStream().use { zis.copyTo(it) } }
-                    }
-                }
-                e = zis.nextEntry
-            }
-        }
-    }
-}
-
-// Ensure the vendored ImGui tree exists before CMake configures.
-tasks.configureEach { if (name.startsWith("pre") && name.endsWith("Build")) dependsOn(prepareImgui) }
-
 android {
-    namespace = "com.example.imguimenu"
-    compileSdk = 35
-    ndkVersion = "27.2.12479018"
+    namespace = "com.example.autotapmacro"
+    compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.imguimenu"
-        minSdk = 23
-        targetSdk = 35
+        applicationId = "com.example.autotapmacro"
+        minSdk = 26
+        targetSdk = 34
         versionCode = 1
-        versionName = "1.0.0"
-
-        externalNativeBuild { cmake { cppFlags += "-std=c++17" } }
+        versionName = "1.0"
     }
-
-    buildTypes {
-        release { isMinifyEnabled = false }
-        debug { isMinifyEnabled = false }
+    
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-
-    externalNativeBuild { cmake { path = file("src/main/cpp/CMakeLists.txt"); version = "3.31.6" } }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
 
-dependencies { implementation("androidx.core:core-ktx:1.17.0") }
+dependencies {
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("dev.rikka.shizuku:api:13.1.5")
+    implementation("dev.rikka.shizuku:provider:13.1.5")
+    implementation("com.google.code.gson:gson:2.10.1")
+}

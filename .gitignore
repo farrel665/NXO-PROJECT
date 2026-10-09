@@ -1,8 +1,0 @@
-.gradle/
-.idea/
-local.properties
-build/
-app/build/
-.externalNativeBuild/
-.cxx/
-third_party/imgui/
