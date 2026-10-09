@@ -37,11 +37,10 @@ object ShizukuHelper {
     fun tap(x: Int, y: Int): Boolean {
         if (!hasPermission()) return false
         return try { 
-            // Tipe data ditulis eksplisit untuk mencegah error "Cannot access 'newProcess'"
             val cmd = arrayOf("sh", "-c", "input tap $x $y")
-            val env: Array<String>? = null
-            val dir: String? = null
-            Shizuku.newProcess(cmd, env, dir).waitFor() == 0 
+            // PERBAIKAN: Menggunakan "/" (String) alih-alih null agar Kotlin 
+            // tidak salah memanggil fungsi private yang menggunakan File
+            Shizuku.newProcess(cmd, null, "/").waitFor() == 0 
         } catch (e: Exception) { false }
     }
 }
