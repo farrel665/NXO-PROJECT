@@ -33,9 +33,16 @@ object ShizukuHelper {
     fun isShizukuRunning() = Shizuku.pingBinder()
     fun hasPermission() = isShizukuRunning() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
     fun requestPermission(code: Int) { if (isShizukuRunning() && !hasPermission()) Shizuku.requestPermission(code) }
+    
     fun tap(x: Int, y: Int): Boolean {
         if (!hasPermission()) return false
-        return try { Shizuku.newProcess(arrayOf("sh", "-c", "input tap $x $y"), null, null).waitFor() == 0 } catch (e: Exception) { false }
+        return try { 
+            // Tipe data ditulis eksplisit untuk mencegah error "Cannot access 'newProcess'"
+            val cmd = arrayOf("sh", "-c", "input tap $x $y")
+            val env: Array<String>? = null
+            val dir: String? = null
+            Shizuku.newProcess(cmd, env, dir).waitFor() == 0 
+        } catch (e: Exception) { false }
     }
 }
 
