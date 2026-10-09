@@ -37,11 +37,23 @@ object ShizukuHelper {
     fun tap(x: Int, y: Int): Boolean {
         if (!hasPermission()) return false
         return try { 
+            // PERBAIKAN FINAL: 
+            // Menggunakan Java Reflection untuk menghindari bug visibilitas (private) pada Kotlin.
+            // Ini memaksa pemanggilan fungsi Shizuku.newProcess() tanpa dicegat compiler Kotlin.
+            val method = Shizuku::class.java.getMethod(
+                "newProcess", 
+                Array<String>::class.java, 
+                Array<String>::class.java, 
+                String::class.java
+            )
             val cmd = arrayOf("sh", "-c", "input tap $x $y")
-            // PERBAIKAN: Menggunakan "/" (String) alih-alih null agar Kotlin 
-            // tidak salah memanggil fungsi private yang menggunakan File
-            Shizuku.newProcess(cmd, null, "/").waitFor() == 0 
-        } catch (e: Exception) { false }
+            val process = method.invoke(null, cmd, null, null) as java.lang.Process
+            
+            process.waitFor() == 0 
+        } catch (e: Exception) { 
+            e.printStackTrace()
+            false 
+        }
     }
 }
 
