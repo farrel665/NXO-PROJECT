@@ -18,7 +18,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Install SDK Platform 35       # ← Langsung pakai sdkmanager bawaan runner
+    - name: Install SDK Platform 35
       run: |
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
           "platforms;android-35" \
@@ -30,7 +30,7 @@ jobs:
         gradle-version: '8.5'
 
     - name: Build APK
-       run: gradle assembleDebug
+      run: gradle assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
