@@ -18,11 +18,11 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Android SDK          # ← TAMBAH INI
-      uses: android-actions/setup-android@v3
-
-    - name: Install SDK Platform 35    # ← TAMBAH INI
-      run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+    - name: Install SDK Platform 35       # ← Langsung pakai sdkmanager bawaan runner
+      run: |
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+          "platforms;android-35" \
+          "build-tools;35.0.0"
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
@@ -30,7 +30,7 @@ jobs:
         gradle-version: '8.5'
 
     - name: Build APK
-      run: ./gradlew assembleDebug     # ← ganti dari "gradle" ke "./gradlew"
+      run: ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
