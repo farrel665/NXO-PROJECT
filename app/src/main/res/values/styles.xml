@@ -16,4 +16,11 @@
         <item name="windowActionBar">true</item>
         <item name="windowNoTitle">false</item>
     </style>
+    <style name="Base.Widget.AncoreChip" parent="Widget.Material3.Chip.Filter">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="chipBackgroundColor">#1A2020</item>
+        <item name="chipStrokeColor">#513B37</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="checkedBackgroundColor">#513B37</item>
+    </style>
 </resources>

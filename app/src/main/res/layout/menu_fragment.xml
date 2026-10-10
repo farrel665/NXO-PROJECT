@@ -22,7 +22,7 @@
 				android:id="@+id/chip1"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				style="@style/Base.Widget.AuroraChip"
+				style="@style/Base.Widget.AncoreChip"
 				android:checkable="true"
 				app:checkedIconVisible="false"
 				android:text="@string/tag_title_config" />
@@ -30,7 +30,7 @@
 				android:id="@+id/chip2"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				style="@style/Base.Widget.AuroraChip"
+				style="@style/Base.Widget.AncoreChip"
 				android:checkable="true"
 				app:checkedIconVisible="false"
 				android:text="@string/tag_title_visual" />
@@ -38,7 +38,7 @@
 				android:id="@+id/chip3"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				style="@style/Base.Widget.AuroraChip"
+				style="@style/Base.Widget.AncoreChip"
 				android:checkable="true"
 				app:checkedIconVisible="false"
 				android:text="@string/tag_title_tools" />
