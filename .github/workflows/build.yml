@@ -30,10 +30,33 @@ jobs:
         gradle-version: '8.10'
 
     - name: Build APK
-      run: gradle assembleRelease   # ← ganti dari assembleDebug
+      run: gradle assembleRelease
+
+    - name: Generate Debug Keystore
+      run: |
+        mkdir -p ~/.android
+        keytool -genkey -v \
+          -keystore ~/.android/debug.keystore \
+          -alias androiddebugkey \
+          -keyalg RSA \
+          -keysize 2048 \
+          -validity 10000 \
+          -storepass android \
+          -keypass android \
+          -dname "CN=Android Debug,O=Android,C=US"
+
+    - name: Sign APK
+      run: |
+        $ANDROID_HOME/build-tools/35.0.0/apksigner sign \
+          --ks ~/.android/debug.keystore \
+          --ks-pass pass:android \
+          --key-pass pass:android \
+          --ks-key-alias androiddebugkey \
+          --out app/build/outputs/apk/release/app-release-signed.apk \
+          app/build/outputs/apk/release/app-release-unsigned.apk
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: NXO-ANCORE-APK
-        path: app/build/outputs/apk/release/app-release-unsigned.apk
+        path: app/build/outputs/apk/release/app-release-signed.apk
