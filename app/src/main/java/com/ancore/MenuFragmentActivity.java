@@ -1,47 +1,48 @@
 package com.ancore;
 
-import android.animation.*;
-import android.app.*;
-import android.content.*;
-import android.content.res.*;
-import android.graphics.*;
-import android.graphics.drawable.*;
-import android.media.*;
-import android.net.*;
-import android.os.*;
-import android.text.*;
-import android.text.style.*;
-import android.util.*;
+import android.graphics.Typeface;
+import android.os.Bundle;
 import android.view.*;
-import android.view.View.*;
-import android.view.animation.*;
-import android.widget.*;
 import androidx.annotation.*;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import java.io.*;
-import java.text.*;
-import java.util.*;
-import java.util.regex.*;
-import org.json.*;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 public class MenuFragmentActivity extends Fragment {
-	
-	@NonNull
-	@Override
-	public View onCreateView(@NonNull LayoutInflater _inflater, @Nullable ViewGroup _container, @Nullable Bundle _savedInstanceState) {
-		View _view = _inflater.inflate(R.layout.menu_fragment, _container, false);
-		initialize(_savedInstanceState, _view);
-		initializeLogic();
-		return _view;
-	}
-	
-	private void initialize(Bundle _savedInstanceState, View _view) {
-	}
-	
-	private void initializeLogic() {
-	}
-	
-}
+
+    private ChipGroup container_chip;
+    private Chip chip1, chip2, chip3;
+
+    @NonNull
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.menu_fragment, container, false);
+        initialize(view);
+        initializeLogic();
+        return view;
+    }
+
+    private void initialize(View view) {
+        container_chip = view.findViewById(R.id.container_chip);
+        chip1 = view.findViewById(R.id.chip1);
+        chip2 = view.findViewById(R.id.chip2);
+        chip3 = view.findViewById(R.id.chip3);
+    }
+
+    private void initializeLogic() {
+        Typeface semibold = Typeface.createFromAsset(requireContext().getAssets(), "fonts/gfsemibold.ttf");
+        Typeface regular = Typeface.createFromAsset(requireContext().getAssets(), "fonts/gfregular.ttf");
+
+        // Font awal — chip1 default terpilih
+        chip1.setTypeface(semibold);
+        chip2.setTypeface(regular);
+        chip3.setTypeface(regular);
+
+        // Update font setiap kali pilihan berubah
+        container_chip.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            chip1.setTypeface(chip1.isChecked() ? semibold : regular);
+            chip2.setTypeface(chip2.isChecked() ? semibold : regular);
+            chip3.setTypeface(chip3.isChecked() ? semibold : regular);
+        });
+    }
+}

@@ -1,7 +1,6 @@
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -17,6 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:singleSelection="true"
+            app:selectionRequired="true"
             app:checkedChip="@+id/chip1">
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip1"
@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 style="@style/Base.Widget.AncoreChip"
                 android:checkable="true"
-                app:chipIcon="@drawable/ic_settings"
+                app:chipIcon="@drawable/games"
                 android:text="@string/tag_title_config" />
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip2"
@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 style="@style/Base.Widget.AncoreChip"
                 android:checkable="true"
-                app:chipIcon="@drawable/games"
+                app:chipIcon="@drawable/ic_settings"
                 android:text="@string/tag_title_tools" />
         </com.google.android.material.chip.ChipGroup>
         <androidx.fragment.app.FragmentContainerView

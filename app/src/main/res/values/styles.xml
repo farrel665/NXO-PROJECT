@@ -17,14 +17,18 @@
         <item name="windowNoTitle">false</item>
     </style>
     <style name="Base.Widget.AncoreChip" parent="Widget.Material3.Chip.Filter">
-        <item name="android:textColor">#FFE0E2</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">13sp</item>
         <item name="chipBackgroundColor">@color/chip_background_selector</item>
         <item name="chipStrokeColor">#513B37</item>
         <item name="chipStrokeWidth">1dp</item>
-        <item name="chipCornerRadius">100dp</item>
+        <item name="chipCornerRadius">80dp</item>
+        <item name="chipMinHeight">40dp</item>
+        <item name="chipStartPadding">10dp</item>
+        <item name="chipEndPadding">10dp</item>
         <item name="chipIconVisible">true</item>
         <item name="chipIconSize">18dp</item>
-        <item name="chipIconTint">#FFE0E2</item>
+        <item name="chipIconTint">#FFFFFF</item>
         <item name="checkedIconVisible">false</item>
     </style>
 </resources>
