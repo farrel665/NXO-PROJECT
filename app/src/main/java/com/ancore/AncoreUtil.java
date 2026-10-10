@@ -13,7 +13,7 @@ import java.util.*;
 
 import com.google.android.material.color.MaterialColors;
 
-public class SketchwareUtil {
+public class AncoreUtil {
 
     public static int TOP = 1;
     public static int CENTER = 2;

@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 		Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/gfregular.ttf");
 		bottomNav.setTypeface(tf);
 		
-		textview3.setBackground(new GradientDrawable() { public GradientDrawable getIns(int a, int b) { this.setCornerRadius(a); this.setColor(b); return this; } }.getIns((int)SketchwareUtil.getDip(getApplicationContext(), (int)(8)), 0xFF1A2020));
+		textview3.setBackground(new GradientDrawable() { public GradientDrawable getIns(int a, int b) { this.setCornerRadius(a); this.setColor(b); return this; } }.getIns((int)AncoreUtil.getDip(getApplicationContext(), (int)(8)), 0xFF1A2020));
 		textview2.setTypeface(Typeface.createFromAsset(getAssets(),"fonts/gfbold.ttf"), 0);
 		textview1.setTypeface(Typeface.createFromAsset(getAssets(),"fonts/gfregular.ttf"), 1);
 		textview3.setTypeface(Typeface.createFromAsset(getAssets(),"fonts/gfbold.ttf"), 0);
@@ -178,4 +178,4 @@ public class MainActivity extends AppCompatActivity {
 		decor.setSystemUiVisibility(flags);
 	}
 	
-}
+}

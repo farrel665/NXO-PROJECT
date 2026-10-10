@@ -193,8 +193,8 @@ public class HomeFragmentActivity extends Fragment {
 			}
 		});
 		
-		pill1.setBackground(new GradientDrawable() { public GradientDrawable getIns(int a, int b) { this.setCornerRadius(a); this.setColor(b); return this; } }.getIns((int)AncoreUtil.getDip(getContext().getApplicationContext(), (int)(50)), 0x90513B37));
-		pill2.setBackground(new GradientDrawable() { public GradientDrawable getIns(int a, int b) { this.setCornerRadius(a); this.setColor(b); return this; } }.getIns((int)AncoreUtil.getDip(getContext().getApplicationContext(), (int)(50)), 0x90513B37));
+		pill1.setBackground(new GradientDrawable() { public GradientDrawable getIns(int a, int b) { this.setCornerRadius(a); this.setColor(b); return this; } }.getIns((int)SketchwareUtil.getDip(getContext().getApplicationContext(), (int)(50)), 0x90513B37));
+		pill2.setBackground(new GradientDrawable() { public GradientDrawable getIns(int a, int b) { this.setCornerRadius(a); this.setColor(b); return this; } }.getIns((int)SketchwareUtil.getDip(getContext().getApplicationContext(), (int)(50)), 0x90513B37));
 		txtTitleFF.setTypeface(Typeface.createFromAsset(getContext().getAssets(),"fonts/gfbold.ttf"), 0);
 		txtTitleFFMax.setTypeface(Typeface.createFromAsset(getContext().getAssets(),"fonts/gfbold.ttf"), 0);
 		txtPackageFF.setTypeface(Typeface.createFromAsset(getContext().getAssets(),"fonts/gfregular.ttf"), 1);
@@ -204,4 +204,4 @@ public class HomeFragmentActivity extends Fragment {
 		textview4.setTypeface(Typeface.createFromAsset(getContext().getAssets(),"fonts/gfsemibold.ttf"), 0);
 	}
 	
-}
+}
