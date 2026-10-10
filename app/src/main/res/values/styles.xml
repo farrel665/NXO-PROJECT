@@ -24,8 +24,8 @@
         <item name="chipStrokeWidth">1dp</item>
         <item name="chipCornerRadius">80dp</item>
         <item name="chipMinHeight">34dp</item>
-        <item name="chipStartPadding">9dp</item>
-        <item name="chipEndPadding">8dp</item>
+        <item name="chipStartPadding">10dp</item>
+        <item name="chipEndPadding">0dp</item>
         <item name="chipIconVisible">true</item>
         <item name="chipIconSize">18dp</item>
         <item name="chipIconTint">#FFFFFF</item>
