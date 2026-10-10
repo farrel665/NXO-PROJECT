@@ -1,0 +1,82 @@
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#0F1515"
+	android:orientation="vertical"
+	android:id="@+id/_main">
+	<LinearLayout
+		android:id="@+id/linear1"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="#0F1515"
+		android:orientation="vertical">
+		<LinearLayout
+			android:id="@+id/linear2"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:paddingLeft="15dp"
+			android:paddingTop="12dp"
+			android:paddingRight="15dp"
+			android:paddingBottom="4dp"
+			android:orientation="vertical">
+			<LinearLayout
+				android:id="@+id/linear3"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="center_vertical"
+				android:orientation="horizontal">
+				<TextView
+					android:id="@+id/textview2"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="Start Game"
+					android:textSize="28sp"
+					android:textStyle="bold"
+					android:textColor="#FFE0E2"
+					android:layout_weight="1" />
+				<TextView
+					android:id="@+id/textview3"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:paddingLeft="8dp"
+					android:paddingTop="5dp"
+					android:paddingRight="8dp"
+					android:paddingBottom="5dp"
+					android:background="#1A2020"
+					android:text="ID"
+					android:textSize="14sp"
+					android:textStyle="bold"
+					android:textColor="#FFE0E2" />
+			</LinearLayout>
+			<TextView
+				android:id="@+id/textview1"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Ancore Tools • \\@RotzX"
+				android:textSize="14sp"
+				android:textColor="#BFACAA" />
+		</LinearLayout>
+		<FrameLayout
+			android:id="@+id/linear5"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:orientation="vertical">
+			<androidx.viewpager.widget.ViewPager
+				android:id="@+id/viewpager1"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="1" />
+			<com.ancore.RoundedBottomNavigation
+				android:id="@+id/bottomNav"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="18dp"
+				android:padding="8dp"
+				android:orientation="horizontal"
+				android:layout_gravity="center_horizontal|bottom" />
+		</FrameLayout>
+	</LinearLayout>
+</LinearLayout>
