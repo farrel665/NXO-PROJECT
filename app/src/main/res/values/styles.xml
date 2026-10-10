@@ -23,8 +23,8 @@
         <item name="chipStrokeColor">#513B37</item>
         <item name="chipStrokeWidth">1dp</item>
         <item name="chipCornerRadius">80dp</item>
-        <item name="chipMinHeight">40dp</item>
-        <item name="chipStartPadding">10dp</item>
+        <item name="chipMinHeight">30dp</item>
+        <item name="chipStartPadding">18dp</item>
         <item name="chipEndPadding">10dp</item>
         <item name="chipIconVisible">true</item>
         <item name="chipIconSize">18dp</item>
